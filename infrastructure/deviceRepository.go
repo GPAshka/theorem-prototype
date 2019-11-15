@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
-	"log"
 	"theorem-prototype/config"
 	"theorem-prototype/domain"
 	"time"
@@ -16,7 +15,6 @@ type deviceRepositoryImplementation struct {
 
 func NewDeviceRepository() (domain.DeviceRepository, error) {
 	dbInfo := config.GetDataBaseInfo()
-	log.Printf("Opening connection to database with parameters: %s", dbInfo)
 
 	db, err := sql.Open("postgres", dbInfo)
 	if err != nil {

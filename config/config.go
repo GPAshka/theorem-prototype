@@ -24,5 +24,7 @@ func GetDataBaseInfo() string {
 	dbInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbHost, dbPort, username, password, dbName)
 
+	log.Printf("Opening connection to database with parameters: %s", dbInfo)
+
 	return dbInfo
 }
