@@ -42,8 +42,11 @@ func (repository *sensorRepositoryImplementation) AddBulkSensorData(data []*doma
 	resultError := make([]string, 0)
 
 	for i, sensorData := range data {
-		err := repository.AddSensorData(sensorData)
-		if err != nil {
+		if err := sensorData.Validate(); err != nil {
+			resultError = append(resultError, errors.Wrap(err, fmt.Sprintf("error while adding sensor value #%v from bulk", i)).Error())
+		}
+
+		if err := repository.AddSensorData(sensorData); err != nil {
 			resultError = append(resultError, errors.Wrap(err, fmt.Sprintf("error while adding sensor value #%v from bulk", i)).Error())
 		}
 	}

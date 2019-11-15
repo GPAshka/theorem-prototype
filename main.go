@@ -93,6 +93,13 @@ func (s *service) handleAddSensorData() http.HandlerFunc {
 			return
 		}
 
+		//validate incoming sensor data
+		err = sensorData.Validate()
+		if err != nil {
+			utils.RespondError(w, err)
+			return
+		}
+
 		//check if device with specified serial number exists
 		existingDevice, err := s.deviceRepository.Get(sensorData.DeviceSerialNumber)
 		if err != nil || existingDevice == nil {
@@ -119,15 +126,13 @@ func (s *service) handleAddBulkSensorData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//decode HTTP request body
 		var sensorData []*domain.SensorData
-		err := utils.DecodeRequest(r.Body, &sensorData)
-		if err != nil {
+		if err := utils.DecodeRequest(r.Body, &sensorData); err != nil {
 			utils.RespondError(w, err)
 			return
 		}
 
 		//add bulk sensor data
-		err = s.sensorRepository.AddBulkSensorData(sensorData)
-		if err != nil {
+		if err := s.sensorRepository.AddBulkSensorData(sensorData); err != nil {
 			utils.RespondError(w, err)
 			return
 		}
