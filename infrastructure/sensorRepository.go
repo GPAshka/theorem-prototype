@@ -2,7 +2,9 @@ package infrastructure
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/pkg/errors"
+	"strings"
 	"theorem-prototype/config"
 	"theorem-prototype/domain"
 	"time"
@@ -34,6 +36,23 @@ func (repository *sensorRepositoryImplementation) AddSensorData(data *domain.Sen
 	}
 
 	return nil
+}
+
+func (repository *sensorRepositoryImplementation) AddBulkSensorData(data []*domain.SensorData) error {
+	resultError := make([]string, 0)
+
+	for i, sensorData := range data {
+		err := repository.AddSensorData(sensorData)
+		if err != nil {
+			resultError = append(resultError, errors.Wrap(err, fmt.Sprintf("error while adding sensor value #%v from bulk", i)).Error())
+		}
+	}
+
+	if len(resultError) > 0 {
+		return errors.New(strings.Join(resultError, "; "))
+	} else {
+		return nil
+	}
 }
 
 func (repository *sensorRepositoryImplementation) GetSensorData(serialNumber string, date time.Time) ([]*domain.SensorData, error) {

@@ -4,6 +4,7 @@ import "time"
 
 type SensorRepository interface {
 	AddSensorData(data *SensorData) error
+	AddBulkSensorData(data []*SensorData) error
 	GetSensorData(serialNumber string, date time.Time) ([]*SensorData, error)
 }
 
