@@ -4,7 +4,7 @@ import "time"
 
 type DeviceRepository interface {
 	Get(serialNumber string) (*Device, error)
-	GetList() ([]*Device, error)
+	GetList(serialNumber string) ([]*Device, error)
 	Add(device Device) error
 }
 

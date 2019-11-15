@@ -71,7 +71,9 @@ func (s *service) handleAddDevice() http.HandlerFunc {
 
 func (s *service) handleGetDevices() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		devices, err := s.repository.GetList()
+		serialNumber := r.FormValue("serialNumber")
+
+		devices, err := s.repository.GetList(serialNumber)
 		if err != nil {
 			utils.RespondError(w, err)
 			return

@@ -64,28 +64,28 @@ func (repository *deviceRepositoryImplementation) Get(serialNumber string) (*dom
 	return &device, nil
 }
 
-func (repository *deviceRepositoryImplementation) GetList() ([]*domain.Device, error) {
+func (repository *deviceRepositoryImplementation) GetList(serialNumber string) ([]*domain.Device, error) {
 	var (
-		serialNumber     string
+		srNumber         string
 		registrationDate time.Time
 		firmwareVersion  string
 	)
 	devices := make([]*domain.Device, 0)
 
-	query := `SELECT "SerialNumber", "RegistrationDate", "FirmwareVersion" FROM device."Devices"`
-	rows, err := repository.sqlConnection.Query(query)
+	query := `SELECT "SerialNumber", "RegistrationDate", "FirmwareVersion" FROM device."Devices" WHERE "SerialNumber" = $1 OR $1 = ''`
+	rows, err := repository.sqlConnection.Query(query, serialNumber)
 	if err != nil {
 		return nil, errors.Wrap(err, "error while getting list of devices")
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&serialNumber, &registrationDate, &firmwareVersion)
+		err := rows.Scan(&srNumber, &registrationDate, &firmwareVersion)
 		if err != nil {
 			return nil, errors.Wrap(err, "error while getting list of devices")
 		}
 
-		device := domain.Device{SerialNumber: serialNumber, RegistrationDate: registrationDate, FirmwareVersion: firmwareVersion}
+		device := domain.Device{SerialNumber: srNumber, RegistrationDate: registrationDate, FirmwareVersion: firmwareVersion}
 		devices = append(devices, &device)
 	}
 
