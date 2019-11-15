@@ -21,7 +21,7 @@ func NewDeviceRepository() (domain.DeviceRepository, error) {
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 
-	dbInfo := fmt.Sprintf("host=%s post=%s user=%s password=%s dbname=%s sslmode=disable",
+	dbInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbHost, dbPort, username, password, dbName)
 
 	log.Printf("Opening connection to database with parameters: %s", dbInfo)
@@ -35,5 +35,12 @@ func NewDeviceRepository() (domain.DeviceRepository, error) {
 }
 
 func (repository *deviceRepositoryImplementation) Add(device domain.Device) error {
+	query := `INSERT INTO device."Devices" ("SerialNumber", "RegistrationDate", "FirmwareVersion") VALUES($1, $2, $3)`
+
+	_, err := repository.sqlConnection.Exec(query, device.SerialNumber, device.RegistrationDate, device.FirmwareVersion)
+	if err != nil {
+		return errors.Wrap(err, "error while adding device to database")
+	}
+
 	return nil
 }
