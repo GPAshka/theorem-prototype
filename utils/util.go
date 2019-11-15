@@ -12,9 +12,13 @@ func Message(message string) map[string]interface{} {
 	return map[string]interface{}{"message": message}
 }
 
-func RespondSuccess(w http.ResponseWriter) {
+func RespondSuccess(w http.ResponseWriter, data interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+
+	if data != nil {
+		json.NewEncoder(w).Encode(data)
+	}
 }
 
 func RespondError(w http.ResponseWriter, err error) {

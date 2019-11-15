@@ -65,7 +65,19 @@ func (s *service) handleAddDevice() http.HandlerFunc {
 			return
 		}
 
-		utils.RespondSuccess(w)
+		utils.RespondSuccess(w, nil)
+	}
+}
+
+func (s *service) handleGetDevices() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		devices, err := s.repository.GetList()
+		if err != nil {
+			utils.RespondError(w, err)
+			return
+		}
+
+		utils.RespondSuccess(w, devices)
 	}
 }
 
@@ -85,6 +97,8 @@ func main() {
 
 	serv.router.HandleFunc("/api/v1/hc", serv.handleHealthCheck()).Methods("GET")
 	serv.router.HandleFunc("/api/v1/devices", serv.handleAddDevice()).Methods("POST")
+
+	serv.router.HandleFunc("/api/v1/devices", serv.handleGetDevices()).Methods("GET")
 
 	port := os.Getenv("PORT")
 	log.Printf("Starting service on port %v\n", port)
