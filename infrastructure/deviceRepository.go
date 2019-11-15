@@ -27,8 +27,7 @@ func NewDeviceRepository() (domain.DeviceRepository, error) {
 func (repository *deviceRepositoryImplementation) Add(device domain.Device) error {
 	query := `INSERT INTO device."Devices" ("SerialNumber", "RegistrationDate", "FirmwareVersion") VALUES($1, $2, $3)`
 
-	_, err := repository.sqlConnection.Exec(query, device.SerialNumber, device.RegistrationDate, device.FirmwareVersion)
-	if err != nil {
+	if _, err := repository.sqlConnection.Exec(query, device.SerialNumber, device.RegistrationDate, device.FirmwareVersion); err != nil {
 		return errors.Wrap(err, "error while adding device to database")
 	}
 
@@ -69,8 +68,7 @@ func (repository *deviceRepositoryImplementation) GetList(serialNumber string) (
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&srNumber, &registrationDate, &firmwareVersion)
-		if err != nil {
+		if err := rows.Scan(&srNumber, &registrationDate, &firmwareVersion); err != nil {
 			return nil, errors.Wrap(err, "error while getting list of devices")
 		}
 
@@ -78,8 +76,7 @@ func (repository *deviceRepositoryImplementation) GetList(serialNumber string) (
 		devices = append(devices, &device)
 	}
 
-	err = rows.Err()
-	if err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "error while getting list of devices")
 	}
 

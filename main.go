@@ -48,22 +48,19 @@ func (s *service) handleAddDevice() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//decode HTTP request body
 		var device domain.Device
-		err := utils.DecodeRequest(r.Body, &device)
-		if err != nil {
+		if err := utils.DecodeRequest(r.Body, &device); err != nil {
 			utils.RespondError(w, err)
 			return
 		}
 
 		//validate request
-		err = device.Validate()
-		if err != nil {
+		if err := device.Validate(); err != nil {
 			utils.RespondError(w, err)
 			return
 		}
 
 		//check if device with specified serial number already exists
-		existingDevice, err := s.deviceRepository.Get(device.SerialNumber)
-		if err != nil || existingDevice != nil {
+		if existingDevice, err := s.deviceRepository.Get(device.SerialNumber); err != nil || existingDevice != nil {
 			if existingDevice != nil {
 				err = errors.New(fmt.Sprintf("Device with serial number '%s' already registered", device.SerialNumber))
 			}
@@ -73,8 +70,7 @@ func (s *service) handleAddDevice() http.HandlerFunc {
 		}
 
 		//add new device
-		err = s.deviceRepository.Add(device)
-		if err != nil {
+		if err := s.deviceRepository.Add(device); err != nil {
 			utils.RespondError(w, err)
 			return
 		}
@@ -87,22 +83,19 @@ func (s *service) handleAddSensorData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//decode HTTP request body
 		var sensorData domain.SensorData
-		err := utils.DecodeRequest(r.Body, &sensorData)
-		if err != nil {
+		if err := utils.DecodeRequest(r.Body, &sensorData); err != nil {
 			utils.RespondError(w, err)
 			return
 		}
 
 		//validate incoming sensor data
-		err = sensorData.Validate()
-		if err != nil {
+		if err := sensorData.Validate(); err != nil {
 			utils.RespondError(w, err)
 			return
 		}
 
 		//check if device with specified serial number exists
-		existingDevice, err := s.deviceRepository.Get(sensorData.DeviceSerialNumber)
-		if err != nil || existingDevice == nil {
+		if existingDevice, err := s.deviceRepository.Get(sensorData.DeviceSerialNumber); err != nil || existingDevice == nil {
 			if existingDevice == nil {
 				err = errors.New(fmt.Sprintf("Device with serial number '%s' is not registered", sensorData.DeviceSerialNumber))
 			}
@@ -112,8 +105,7 @@ func (s *service) handleAddSensorData() http.HandlerFunc {
 		}
 
 		//add sensor data for device
-		err = s.sensorRepository.AddSensorData(&sensorData)
-		if err != nil {
+		if err := s.sensorRepository.AddSensorData(&sensorData); err != nil {
 			utils.RespondError(w, err)
 			return
 		}
@@ -145,13 +137,12 @@ func (s *service) handleGetDevices() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		serialNumber := r.FormValue("serialNumber")
 
-		devices, err := s.deviceRepository.GetList(serialNumber)
-		if err != nil {
+		if devices, err := s.deviceRepository.GetList(serialNumber); err != nil {
 			utils.RespondError(w, err)
 			return
+		} else {
+			utils.RespondSuccess(w, devices)
 		}
-
-		utils.RespondSuccess(w, devices)
 	}
 }
 
@@ -168,13 +159,12 @@ func (s *service) handleGetSensorData() http.HandlerFunc {
 			return
 		}
 
-		sensorData, err := s.sensorRepository.GetSensorData(serialNumber, date)
-		if err != nil {
+		if sensorData, err := s.sensorRepository.GetSensorData(serialNumber, date); err != nil {
 			utils.RespondError(w, err)
 			return
+		} else {
+			utils.RespondSuccess(w, sensorData)
 		}
-
-		utils.RespondSuccess(w, sensorData)
 	}
 }
 

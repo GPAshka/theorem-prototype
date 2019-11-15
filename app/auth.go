@@ -78,8 +78,7 @@ func JwtAuthenticationMiddleware(next http.Handler) http.Handler {
 func writeError(w http.ResponseWriter, errorMessage string) {
 	w.WriteHeader(http.StatusUnauthorized)
 	w.Header().Add("Content-Type", "application/json")
-	_, err := w.Write([]byte(errorMessage))
-	if err != nil {
+	if _, err := w.Write([]byte(errorMessage)); err != nil {
 		log.Fatal("error while writing JwtAuthentication message", err)
 	}
 }

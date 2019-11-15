@@ -30,8 +30,7 @@ func RespondError(w http.ResponseWriter, err error) {
 }
 
 func DecodeRequest(reader io.Reader, value interface{}) error {
-	err := json.NewDecoder(reader).Decode(value)
-	if err != nil {
+	if err := json.NewDecoder(reader).Decode(value); err != nil {
 		return errors.Wrap(err, fmt.Sprintf("error while decoding struct %T", value))
 	}
 

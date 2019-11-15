@@ -17,21 +17,19 @@ type sensorRepositoryImplementation struct {
 func NewSensorRepository() (domain.SensorRepository, error) {
 	dbInfo := config.GetDataBaseInfo()
 
-	db, err := sql.Open("postgres", dbInfo)
-	if err != nil {
+	if db, err := sql.Open("postgres", dbInfo); err != nil {
 		return nil, errors.Wrap(err, "error while opening database connection")
+	} else {
+		return &sensorRepositoryImplementation{sqlConnection: db}, nil
 	}
-
-	return &sensorRepositoryImplementation{sqlConnection: db}, nil
 }
 
 func (repository *sensorRepositoryImplementation) AddSensorData(data *domain.SensorData) error {
 	query := `INSERT INTO device."SensorData" ("DeviceSerialNumber", "Date", "Temperature", "AirHumidity", "CarbonMonoxide", "HealthStatus") 
 				VALUES($1, $2, $3, $4, $5, $6)`
 
-	_, err := repository.sqlConnection.Exec(query, data.DeviceSerialNumber, data.Date, data.Temperature, data.AirHumidity,
-		data.CarbonMonoxide, data.HealthStatus)
-	if err != nil {
+	if _, err := repository.sqlConnection.Exec(query, data.DeviceSerialNumber, data.Date, data.Temperature, data.AirHumidity,
+		data.CarbonMonoxide, data.HealthStatus); err != nil {
 		return errors.Wrap(err, "error while adding device sensor data to database")
 	}
 
@@ -82,8 +80,7 @@ func (repository *sensorRepositoryImplementation) GetSensorData(serialNumber str
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&sensorDate, &temperature, &airHumidity, &carbonMonoxide, &healthStatus, &deviceSerialNumber)
-		if err != nil {
+		if err := rows.Scan(&sensorDate, &temperature, &airHumidity, &carbonMonoxide, &healthStatus, &deviceSerialNumber); err != nil {
 			return nil, errors.Wrap(err, "error while getting sensor data for device")
 		}
 
@@ -98,8 +95,7 @@ func (repository *sensorRepositoryImplementation) GetSensorData(serialNumber str
 		sensorData = append(sensorData, &data)
 	}
 
-	err = rows.Err()
-	if err != nil {
+	if err := rows.Err(); err != nil {
 		return nil, errors.Wrap(err, "error while getting sensor data for device")
 	}
 
