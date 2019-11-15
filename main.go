@@ -54,6 +54,13 @@ func (s *service) handleAddDevice() http.HandlerFunc {
 			return
 		}
 
+		//validate request
+		err = device.Validate()
+		if err != nil {
+			utils.RespondError(w, err)
+			return
+		}
+
 		//check if device with specified serial number already exists
 		existingDevice, err := s.deviceRepository.Get(device.SerialNumber)
 		if err != nil || existingDevice != nil {
