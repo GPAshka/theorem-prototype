@@ -44,3 +44,21 @@ func (repository *deviceRepositoryImplementation) Add(device domain.Device) erro
 
 	return nil
 }
+
+func (repository *deviceRepositoryImplementation) Get(serialNumber string) (*domain.Device, error) {
+	var device domain.Device
+
+	query := `SELECT "SerialNumber", "RegistrationDate", "FirmwareVersion" FROM device."Devices" WHERE "SerialNumber" = $1`
+	err := repository.sqlConnection.QueryRow(query, serialNumber).Scan(&device.SerialNumber, &device.RegistrationDate,
+		&device.FirmwareVersion)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		} else {
+			return nil, errors.Wrap(err, "error while getting device by serial number")
+		}
+	}
+
+	return &device, nil
+}

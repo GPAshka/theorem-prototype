@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"log"
 	"net/http"
 	"os"
@@ -41,6 +43,17 @@ func (s *service) handleAddDevice() http.HandlerFunc {
 		var device domain.Device
 		err := utils.DecodeRequest(r.Body, &device)
 		if err != nil {
+			utils.RespondError(w, err)
+			return
+		}
+
+		//check if device with specified serial number already exists
+		existingDevice, err := s.repository.Get(device.SerialNumber)
+		if err != nil || existingDevice != nil {
+			if existingDevice != nil {
+				err = errors.New(fmt.Sprintf("Device with serial number '%s' already registered", device.SerialNumber))
+			}
+
 			utils.RespondError(w, err)
 			return
 		}
