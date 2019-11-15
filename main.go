@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
@@ -14,19 +13,25 @@ import (
 )
 
 type service struct {
-	repository domain.DeviceRepository
-	router     *mux.Router
+	deviceRepository domain.DeviceRepository
+	sensorRepository domain.SensorRepository
+	router           *mux.Router
 }
 
 func newService() (*service, error) {
-	rep, err := infrastructure.NewDeviceRepository()
+	deviceRep, err := infrastructure.NewDeviceRepository()
+	if err != nil {
+		return nil, err
+	}
+
+	sensorRep, err := infrastructure.NewSensorRepository()
 	if err != nil {
 		return nil, err
 	}
 
 	router := mux.NewRouter()
 
-	serv := &service{router: router, repository: rep}
+	serv := &service{router: router, deviceRepository: deviceRep, sensorRepository: sensorRep}
 	return serv, nil
 }
 
@@ -48,7 +53,7 @@ func (s *service) handleAddDevice() http.HandlerFunc {
 		}
 
 		//check if device with specified serial number already exists
-		existingDevice, err := s.repository.Get(device.SerialNumber)
+		existingDevice, err := s.deviceRepository.Get(device.SerialNumber)
 		if err != nil || existingDevice != nil {
 			if existingDevice != nil {
 				err = errors.New(fmt.Sprintf("Device with serial number '%s' already registered", device.SerialNumber))
@@ -59,7 +64,39 @@ func (s *service) handleAddDevice() http.HandlerFunc {
 		}
 
 		//add new device
-		err = s.repository.Add(device)
+		err = s.deviceRepository.Add(device)
+		if err != nil {
+			utils.RespondError(w, err)
+			return
+		}
+
+		utils.RespondSuccess(w, nil)
+	}
+}
+
+func (s *service) handleAddSensorData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		//decode HTTP request body
+		var sensorData domain.SensorData
+		err := utils.DecodeRequest(r.Body, &sensorData)
+		if err != nil {
+			utils.RespondError(w, err)
+			return
+		}
+
+		//check if device with specified serial number exists
+		existingDevice, err := s.deviceRepository.Get(sensorData.DeviceSerialNumber)
+		if err != nil || existingDevice == nil {
+			if existingDevice == nil {
+				err = errors.New(fmt.Sprintf("Device with serial number '%s' is not registered", sensorData.DeviceSerialNumber))
+			}
+
+			utils.RespondError(w, err)
+			return
+		}
+
+		//add sensor data for device
+		err = s.sensorRepository.AddSensorData(&sensorData)
 		if err != nil {
 			utils.RespondError(w, err)
 			return
@@ -73,20 +110,13 @@ func (s *service) handleGetDevices() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		serialNumber := r.FormValue("serialNumber")
 
-		devices, err := s.repository.GetList(serialNumber)
+		devices, err := s.deviceRepository.GetList(serialNumber)
 		if err != nil {
 			utils.RespondError(w, err)
 			return
 		}
 
 		utils.RespondSuccess(w, devices)
-	}
-}
-
-func init() {
-	// loads values from .env into the system
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
 	}
 }
 
@@ -99,6 +129,7 @@ func main() {
 
 	serv.router.HandleFunc("/api/v1/hc", serv.handleHealthCheck()).Methods("GET")
 	serv.router.HandleFunc("/api/v1/devices", serv.handleAddDevice()).Methods("POST")
+	serv.router.HandleFunc("/api/v1/devices/sensors", serv.handleAddSensorData()).Methods("POST")
 
 	serv.router.HandleFunc("/api/v1/devices", serv.handleGetDevices()).Methods("GET")
 
