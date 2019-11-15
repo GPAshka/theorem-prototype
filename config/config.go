@@ -28,3 +28,7 @@ func GetDataBaseInfo() string {
 
 	return dbInfo
 }
+
+func GetFirebaseProjectId() string {
+	return os.Getenv("FIREBASE_PROJECT_ID")
+}

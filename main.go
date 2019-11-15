@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"theorem-prototype/app"
 	"theorem-prototype/domain"
 	"theorem-prototype/infrastructure"
 	"theorem-prototype/utils"
@@ -179,6 +180,8 @@ func main() {
 
 	serv.router.HandleFunc("/api/v1/devices", serv.handleGetDevices()).Methods("GET")
 	serv.router.HandleFunc("/api/v1/devices/{serialNumber}/sensors", serv.handleGetSensorData()).Methods("GET")
+
+	serv.router.Use(app.JwtAuthenticationMiddleware)
 
 	port := os.Getenv("PORT")
 	log.Printf("Starting service on port %v\n", port)
