@@ -36,10 +36,10 @@ func (repository *sensorRepositoryImplementation) AddSensorData(data *domain.Sen
 	return nil
 }
 
-func (repository *sensorRepositoryImplementation) GetSensorData(serialNumber string) ([]*domain.SensorData, error) {
+func (repository *sensorRepositoryImplementation) GetSensorData(serialNumber string, date time.Time) ([]*domain.SensorData, error) {
 	var (
 		deviceSerialNumber string
-		date               time.Time
+		sensorDate         time.Time
 		temperature        float32
 		airHumidity        float32
 		carbonMonoxide     float32
@@ -50,23 +50,24 @@ func (repository *sensorRepositoryImplementation) GetSensorData(serialNumber str
 
 	query := `SELECT "Date", "Temperature", "AirHumidity", "CarbonMonoxide", "HealthStatus", "DeviceSerialNumber"
 				FROM device."SensorData"
-				WHERE "DeviceSerialNumber" = $1;`
+				WHERE "DeviceSerialNumber" = $1
+				AND "Date"::date = $2::date;`
 
-	rows, err := repository.sqlConnection.Query(query, serialNumber)
+	rows, err := repository.sqlConnection.Query(query, serialNumber, date)
 	if err != nil {
 		return nil, errors.Wrap(err, "error while getting sensor data for device")
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		err := rows.Scan(&date, &temperature, &airHumidity, &carbonMonoxide, &healthStatus, &deviceSerialNumber)
+		err := rows.Scan(&sensorDate, &temperature, &airHumidity, &carbonMonoxide, &healthStatus, &deviceSerialNumber)
 		if err != nil {
 			return nil, errors.Wrap(err, "error while getting sensor data for device")
 		}
 
 		data := domain.SensorData{
 			DeviceSerialNumber: deviceSerialNumber,
-			Date:               date,
+			Date:               sensorDate,
 			Temperature:        temperature,
 			AirHumidity:        airHumidity,
 			CarbonMonoxide:     carbonMonoxide,

@@ -10,6 +10,7 @@ import (
 	"theorem-prototype/domain"
 	"theorem-prototype/infrastructure"
 	"theorem-prototype/utils"
+	"time"
 )
 
 type service struct {
@@ -122,10 +123,18 @@ func (s *service) handleGetDevices() http.HandlerFunc {
 
 func (s *service) handleGetSensorData() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//read request parameters
 		vars := mux.Vars(r)
 		serialNumber := vars["serialNumber"]
+		dateParam := r.FormValue("date")
 
-		sensorData, err := s.sensorRepository.GetSensorData(serialNumber)
+		date, err := time.Parse("2006-01-02", dateParam)
+		if err != nil {
+			utils.RespondError(w, errors.Wrap(err, "error while parsing 'date' query parameter"))
+			return
+		}
+
+		sensorData, err := s.sensorRepository.GetSensorData(serialNumber, date)
 		if err != nil {
 			utils.RespondError(w, err)
 			return
