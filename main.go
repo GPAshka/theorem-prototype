@@ -176,9 +176,9 @@ func main() {
 	}
 
 	serv.router.HandleFunc("/api/v1/hc", serv.handleHealthCheck()).Methods("GET")
-	serv.router.HandleFunc("/api/v1/devices", serv.handleAddDevice()).Methods("POST")
-	serv.router.HandleFunc("/api/v1/devices/sensors", serv.handleAddSensorData()).Methods("POST")
-	serv.router.HandleFunc("/api/v1/devices/sensors/bulk", serv.handleAddBulkSensorData()).Methods("POST")
+	serv.router.HandleFunc("/api/v1/device", serv.handleAddDevice()).Methods("POST")
+	serv.router.HandleFunc("/api/v1/device/sensors", serv.handleAddSensorData()).Methods("POST")
+	serv.router.HandleFunc("/api/v1/device/sensors/bulk", serv.handleAddBulkSensorData()).Methods("POST")
 
 	serv.router.HandleFunc("/api/v1/devices", serv.handleGetDevices()).Methods("GET")
 	serv.router.HandleFunc("/api/v1/devices/{serialNumber}/sensors", serv.handleGetSensorData()).Methods("GET")

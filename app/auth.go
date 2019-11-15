@@ -35,12 +35,12 @@ func init() {
 func JwtAuthenticationMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//List of endpoints that doesn't require auth
-		notAuth := []string{"/api/v1/hc", "/api/v1/devices", "/api/v1/devices/sensors", "/api/v1/devices/sensors/bulk"}
+		notAuth := []string{"/api/v1/hc", "/api/v1/device", "/api/v1/device/sensors", "/api/v1/device/sensors/bulk"}
 		requestPath := r.URL.Path //current request path
 
 		//check if request does not need authentication, serve the request if it doesn't need it
 		for _, value := range notAuth {
-			if value == requestPath && r.Method != "GET" {
+			if value == requestPath {
 				next.ServeHTTP(w, r)
 				return
 			}
