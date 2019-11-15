@@ -6,16 +6,25 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"theorem-prototype/domain"
+	"theorem-prototype/infrastructure"
 )
 
 type service struct {
-	router *mux.Router
+	repository domain.DeviceRepository
+	router     *mux.Router
 }
 
-func newService() *service {
+func newService() (*service, error) {
+	rep, err := infrastructure.NewDeviceRepository()
+	if err != nil {
+		return nil, err
+	}
+
 	router := mux.NewRouter()
-	serv := &service{router: router}
-	return serv
+
+	serv := &service{router: router, repository: rep}
+	return serv, nil
 }
 
 func (s *service) handleHealthCheck() http.HandlerFunc {
@@ -33,9 +42,14 @@ func init() {
 }
 
 func main() {
-	serv := newService()
+	serv, err := newService()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	serv.router.HandleFunc("/api/v1/hc", serv.handleHealthCheck()).Methods("GET")
+	//serv.router.HandleFunc("/api/v1/device",).Methods("POST")
 
 	port := os.Getenv("PORT")
 	log.Printf("Starting service on port %v\n", port)

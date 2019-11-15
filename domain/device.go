@@ -2,12 +2,11 @@ package domain
 
 import "time"
 
-type AirCondDeviceRepository interface {
-	Add(device AirCondDevice) error
+type DeviceRepository interface {
+	Add(device Device) error
 }
 
-type AirCondDevice struct {
-	Id               int
+type Device struct {
 	SerialNumber     string
 	RegistrationDate time.Time
 	FirmwareVersion  string
