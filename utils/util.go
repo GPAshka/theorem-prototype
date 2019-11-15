@@ -2,6 +2,9 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/pkg/errors"
+	"io"
 	"net/http"
 )
 
@@ -20,4 +23,13 @@ func RespondError(w http.ResponseWriter, err error) {
 
 	response := Message(err.Error())
 	json.NewEncoder(w).Encode(response)
+}
+
+func DecodeRequest(reader io.Reader, value interface{}) error {
+	err := json.NewDecoder(reader).Decode(value)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("error while decoding struct %T", value))
+	}
+
+	return nil
 }
