@@ -120,6 +120,21 @@ func (s *service) handleGetDevices() http.HandlerFunc {
 	}
 }
 
+func (s *service) handleGetSensorData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		serialNumber := vars["serialNumber"]
+
+		sensorData, err := s.sensorRepository.GetSensorData(serialNumber)
+		if err != nil {
+			utils.RespondError(w, err)
+			return
+		}
+
+		utils.RespondSuccess(w, sensorData)
+	}
+}
+
 func main() {
 	serv, err := newService()
 	if err != nil {
@@ -132,6 +147,7 @@ func main() {
 	serv.router.HandleFunc("/api/v1/devices/sensors", serv.handleAddSensorData()).Methods("POST")
 
 	serv.router.HandleFunc("/api/v1/devices", serv.handleGetDevices()).Methods("GET")
+	serv.router.HandleFunc("/api/v1/devices/{serialNumber}/sensors", serv.handleGetSensorData()).Methods("GET")
 
 	port := os.Getenv("PORT")
 	log.Printf("Starting service on port %v\n", port)

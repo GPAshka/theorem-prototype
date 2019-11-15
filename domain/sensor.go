@@ -4,6 +4,7 @@ import "time"
 
 type SensorRepository interface {
 	AddSensorData(data *SensorData) error
+	GetSensorData(serialNumber string) ([]*SensorData, error)
 }
 
 type SensorData struct {

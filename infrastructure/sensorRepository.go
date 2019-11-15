@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"theorem-prototype/config"
 	"theorem-prototype/domain"
+	"time"
 )
 
 type sensorRepositoryImplementation struct {
@@ -33,4 +34,51 @@ func (repository *sensorRepositoryImplementation) AddSensorData(data *domain.Sen
 	}
 
 	return nil
+}
+
+func (repository *sensorRepositoryImplementation) GetSensorData(serialNumber string) ([]*domain.SensorData, error) {
+	var (
+		deviceSerialNumber string
+		date               time.Time
+		temperature        float32
+		airHumidity        float32
+		carbonMonoxide     float32
+		healthStatus       string
+	)
+
+	sensorData := make([]*domain.SensorData, 0)
+
+	query := `SELECT "Date", "Temperature", "AirHumidity", "CarbonMonoxide", "HealthStatus", "DeviceSerialNumber"
+				FROM device."SensorData"
+				WHERE "DeviceSerialNumber" = $1;`
+
+	rows, err := repository.sqlConnection.Query(query, serialNumber)
+	if err != nil {
+		return nil, errors.Wrap(err, "error while getting sensor data for device")
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err := rows.Scan(&date, &temperature, &airHumidity, &carbonMonoxide, &healthStatus, &deviceSerialNumber)
+		if err != nil {
+			return nil, errors.Wrap(err, "error while getting sensor data for device")
+		}
+
+		data := domain.SensorData{
+			DeviceSerialNumber: deviceSerialNumber,
+			Date:               date,
+			Temperature:        temperature,
+			AirHumidity:        airHumidity,
+			CarbonMonoxide:     carbonMonoxide,
+			HealthStatus:       healthStatus,
+		}
+		sensorData = append(sensorData, &data)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, errors.Wrap(err, "error while getting sensor data for device")
+	}
+
+	return sensorData, nil
 }
