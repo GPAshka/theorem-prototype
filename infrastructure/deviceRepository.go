@@ -2,11 +2,10 @@ package infrastructure
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
 	"log"
-	"os"
+	"theorem-prototype/config"
 	"theorem-prototype/domain"
 	"time"
 )
@@ -16,15 +15,7 @@ type deviceRepositoryImplementation struct {
 }
 
 func NewDeviceRepository() (domain.DeviceRepository, error) {
-	username := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASS")
-	dbName := os.Getenv("DB_NAME")
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-
-	dbInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, username, password, dbName)
-
+	dbInfo := config.GetDataBaseInfo()
 	log.Printf("Opening connection to database with parameters: %s", dbInfo)
 
 	db, err := sql.Open("postgres", dbInfo)
